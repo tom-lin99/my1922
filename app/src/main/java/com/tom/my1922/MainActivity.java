@@ -20,7 +20,10 @@ import android.view.View.OnClickListener;
 import android.widget.Button;
 import android.widget.EditText;
 
+import java.util.regex.Pattern;
+
 public class MainActivity extends AppCompatActivity {
+    private static final String SMSTO = "SMSTO:";
     private IntentIntegrator scanIntegrator;
     /** Called when the activity is first created. */
     private EditText editTextReceiver;
@@ -43,12 +46,38 @@ public class MainActivity extends AppCompatActivity {
             public void onClick(View v) {
                 String receiver = editTextReceiver.getText().toString();
                 String text = editTextContent.getText().toString();
+                //解析 SMSTO_1922  SMSTO:1922:
+                if(text.startsWith(SMSTO)){
+                    String newText = text.replace(SMSTO, "");
+                    int secondColIndex = newText.indexOf(":");
+                    if(secondColIndex >0 && secondColIndex<=10){
+                        String toPhoneNum = newText.substring(0, secondColIndex);
+                        if( isPhoneNum(toPhoneNum)){
+                            newText = newText.substring(secondColIndex+1);
+                            //解析格式符合 SMSTO:XXXX:則設定新值
+                            receiver = toPhoneNum;
+                            text = newText;
+
+                            editTextReceiver.setText(toPhoneNum);
+                            editTextContent.setText(newText);
+                        }
+                    }
+                }
 //                sendSms(receiver, text);
                 sendSmsByIntent(receiver, text);
                 //sendSmsWithPendingIntent(receiver, text);
             }
         });
         //---
+    }
+
+//    private Pattern pattern = Pattern.compile("-?\\d+(\\.\\d+)?");
+    private Pattern patternPhone = Pattern.compile("\\d+");
+    public boolean isPhoneNum(String strNum) {
+        if (strNum == null) {
+            return false;
+        }
+        return patternPhone.matcher(strNum).matches();
     }
     private void sendSmsByIntent(String receiver, String text) {
         Intent intent= new Intent();
