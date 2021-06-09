@@ -46,25 +46,21 @@ public class MainActivity extends AppCompatActivity {
             public void onClick(View v) {
                 String receiver = editTextReceiver.getText().toString();
                 String text = editTextContent.getText().toString();
-                //解析 SMSTO_1922  SMSTO:1922:
-                if(text.startsWith(SMSTO)){
-                    String newText = text.replace(SMSTO, "");
-                    int secondColIndex = newText.indexOf(":");
-                    if(secondColIndex >0 && secondColIndex<=10){
-                        String toPhoneNum = newText.substring(0, secondColIndex);
-                        if( isPhoneNum(toPhoneNum)){
-                            newText = newText.substring(secondColIndex+1);
-                            //解析格式符合 SMSTO:XXXX:則設定新值
-                            receiver = toPhoneNum;
-                            text = newText;
 
-                            editTextReceiver.setText(toPhoneNum);
-                            editTextContent.setText(newText);
-                        }
-                    }
+                //採取動作例如 :傳送簡訊
+                new BarCodeAction(MainActivity.this).parseBarCode(text);
+                /*
+                SmsInput smsInput = BarCodeAction.parseSms(text);
+                if(smsInput!=null){
+                    editTextReceiver.setText(smsInput.getReceiver());
+                    editTextContent.setText(smsInput.getMsg());
+                    sendSmsByIntent(smsInput.getReceiver(), smsInput.getMsg());
+                    return;
                 }
+                 */
+
 //                sendSms(receiver, text);
-                sendSmsByIntent(receiver, text);
+                //sendSmsByIntent(receiver, text);
                 //sendSmsWithPendingIntent(receiver, text);
             }
         });
@@ -83,6 +79,7 @@ public class MainActivity extends AppCompatActivity {
         Intent intent= new Intent();
         intent.setAction(Intent.ACTION_SENDTO);
         intent.setData(Uri.parse("smsto:"+receiver));
+        intent.setType("text/plain");
         intent.putExtra("sms_body", text);
         startActivity(intent);
     }
@@ -170,6 +167,7 @@ public class MainActivity extends AppCompatActivity {
 
         scanIntegrator = new IntentIntegrator(MainActivity.this);
         scanIntegrator.setPrompt("請掃描");
+        scanIntegrator.setBeepEnabled(false);//關閉Beep一聲
         scanIntegrator.setTimeout(300000);
         scanIntegrator.initiateScan();
     }
