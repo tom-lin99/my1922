@@ -194,4 +194,9 @@ public class MainActivity extends AppCompatActivity {
             Toast.makeText(getApplicationContext(),"發生錯誤",Toast.LENGTH_LONG).show();
         }
     }
+
+    public void onButtonCancelClick(View view) {
+        //結束程式
+        this.finishAffinity();
+    }
 }
